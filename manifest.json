@@ -1,0 +1,20 @@
+{
+    "manifest_version": 3,
+    "name": "RestoreTab",
+    "description": "Restore incognito sessions from a crashed state",
+    "version": "1.0",
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "permissions": [
+        "tabs",
+        "storage"
+    ],
+    "icons": {
+        "64": "images/icons/icon.png"
+    }
+}
