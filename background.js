@@ -3,6 +3,8 @@ import * as db from "./db.js";
 db.openDB();
 
 chrome.tabs.onCreated.addListener(async (tab) => {
+    if (!tab.id || !tab.title || !tab.url) return;
+
     db.addToStore(tab.id, {
         title: tab.title,
         url: tab.url,
@@ -26,6 +28,8 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 
 chrome.tabs.onReplaced.addListener(async (addedTabId, removedTabId) => {
     const oldTab = await db.getFromStore(removedTabId);
+    if (!oldTab.value) return;
+
     db.deleteFromStore(removedTabId);
     db.addToStore(addedTabId, oldTab.value);
 });

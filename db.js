@@ -5,7 +5,7 @@ export let db;
 
 /**
  * Opens connection to IndexedDB and creates store if it doesn't exist
- * @param {callback} callback 
+ * @param {callback} callback
  */
 export async function openDB(callback) {
     const openRequest = indexedDB.open(dbName, version);
@@ -32,8 +32,8 @@ export async function openDB(callback) {
 
 /**
  * Add key and value to store
- * @param {string} key 
- * @param {any} value 
+ * @param {string} key
+ * @param {any} value
  * @returns result
  */
 export async function addToStore(key, value) {
@@ -45,8 +45,8 @@ export async function addToStore(key, value) {
 
 /**
  * Update value where key in store
- * @param {string} key 
- * @param {any} value 
+ * @param {string} key
+ * @param {any} value
  * @returns result
  */
 export async function updateToStore(key, value) {
@@ -59,8 +59,8 @@ export async function updateToStore(key, value) {
 
 /**
  * Get value where key from store
- * @param {string} key 
- * @param {callback} callback 
+ * @param {string} key
+ * @param {callback} callback
  * @returns result
  */
 export async function getFromStore(key, callback = null) {
@@ -68,17 +68,21 @@ export async function getFromStore(key, callback = null) {
     const store = transaction.objectStore(storeName);
     const request = store.get(key);
 
-    return handler("get", transaction, request, callback)
+    return handler("get", transaction, request, callback);
 }
 
 /**
  * Get all items from store
- * @param {number} query 
- * @param {number} count 
- * @param {callback} callback 
+ * @param {number} query
+ * @param {number} count
+ * @param {callback} callback
  * @returns result
  */
-export async function getAllFromStore(query = null, count = null, callback = null) {
+export async function getAllFromStore(
+    query = null,
+    count = null,
+    callback = null
+) {
     const transaction = db.transaction(storeName, "readonly");
     const store = transaction.objectStore(storeName);
     let request;
@@ -96,8 +100,8 @@ export async function getAllFromStore(query = null, count = null, callback = nul
 
 /**
  * Delete value where key in store
- * @param {string} key 
- * @param {callback} callback 
+ * @param {string} key
+ * @param {callback} callback
  * @returns result
  */
 export async function deleteFromStore(key, callback) {
@@ -110,7 +114,7 @@ export async function deleteFromStore(key, callback) {
 
 /**
  * Delete all items from store
- * @param {callback} callback 
+ * @param {callback} callback
  * @returns result
  */
 export async function deleteAllFromStore(callback) {
@@ -135,18 +139,18 @@ function handler(type, transaction, request, callback = null) {
             if (callback) {
                 callback(request.result);
             } else {
-                resolve(request.result)
+                resolve(request.result);
             }
         };
-    
+
         request.onerror = () => {
             console.log(`Error on ${type}:`, request.error);
             reject(request.error);
         };
-    
+
         transaction.onerror = (event) => {
             console.log("Transaction failed:", event);
             reject(request.error);
         };
-    })
+    });
 }
