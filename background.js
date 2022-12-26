@@ -39,6 +39,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         db.getAllFromStore().then((tabs) => {
             sendResponse(tabs);
         });
+    } else if (request.message === "deleteAll") {
+        db.deleteAllFromStore().then(() => {
+            sendResponse(true);
+        });
     }
+
     return true;
 });

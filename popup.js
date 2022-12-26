@@ -1,3 +1,7 @@
+// window.addEventListener("error", (event) => {
+//     return new Error(event)
+// })
+
 // const template = document.getElementById("tabsTemplate");
 const list = {};
 
@@ -33,8 +37,32 @@ chrome.runtime.sendMessage({ message: "getTabs" }, (tabs) => {
 
         list[tab.value.window].append(tabItem);
     }
-    Object.values(list).forEach(element => {
+    Object.values(list).forEach((element) => {
         const length = element.getElementsByTagName("li").length;
         document.querySelector("ul").append(length, element);
-    })
+    });
 });
+
+document.getElementById("openButton").addEventListener("click", openAll);
+document.getElementById("deleteButton").addEventListener("click", deleteAll);
+
+function openAll() {
+    chrome.runtime.sendMessage({ message: "getTabs" }, (tabs) => {
+        for (const tab of tabs) {
+            chrome.tabs.create({
+                active: false,
+                url: tab.value.url,
+                windowId: tab.value.window,
+            });
+        }
+    });
+}
+
+function deleteAll() {
+    chrome.runtime.sendMessage({ message: "deleteAll" }, () => {
+        const list = document.querySelector("#tabList");
+        while (list.firstChild) {
+            list.removeChild(list.firstChild);
+        }
+    });
+}
