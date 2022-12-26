@@ -83,6 +83,9 @@ export async function getAllFromStore(
     count = null,
     callback = null
 ) {
+    if (!db) {
+        return Error("DB not defined");
+    }
     const transaction = db.transaction(storeName, "readonly");
     const store = transaction.objectStore(storeName);
     let request;
@@ -120,7 +123,7 @@ export async function deleteFromStore(key, callback) {
 export async function deleteAllFromStore(callback) {
     const transaction = db.transaction(storeName, "readwrite");
     const store = transaction.objectStore(storeName);
-    const request = store.clear(key);
+    const request = store.clear();
 
     return handler("delete all", transaction, request, callback);
 }
