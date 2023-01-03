@@ -3,26 +3,33 @@
 // })
 
 // const template = document.getElementById("tabsTemplate");
-const list = {};
 
 // const tabs = await getAllFromStore();
-chrome.runtime.sendMessage({ message: "getTabs" }, (tabs) => {
+(async () => {
+    const list = {};
+    const tabs = await chrome.runtime.sendMessage({ message: "getTabs" });
     // TODO: Check window ID to group tabs by window
 
-    for (const tab of tabs) {
+    console.log(tabs);
+
+    // if (!Array.isArray(tabs)) {
+    //     tabs = [tabs];
+    // }
+
+    for (const [_, tab] of Object.entries(tabs)) {
         let tabItem;
         try {
             tabItem = document.createElement("span");
-            const url = new URL(tab.value.url);
+            const url = new URL(tab.url);
             const tabHTML = `
-                <li>
-                    <h3>
-                        <a href="${url}" target="_blank" class="title">${tab.value.title}</a>
-                    </h3>
-                </li>
-            `;
+                    <li>
+                        <h3>
+                            <a href="${url}" target="_blank" class="title">${tab.title}</a>
+                        </h3>
+                    </li>
+                `;
 
-            // <h3 class="title">${tab.value.title}</h3>
+            // <h3 class="title">${tab.title}</h3>
             // <a href="${url}" target="_blank" class="path">${url}</a>
 
             tabItem.innerHTML = tabHTML;
@@ -30,32 +37,32 @@ chrome.runtime.sendMessage({ message: "getTabs" }, (tabs) => {
             console.error(err, JSON.stringify(tab));
         }
 
-        if (!list[tab.value.window]) {
-            list[tab.value.window] = document.createElement("ul");
-            list[tab.value.window].setAttribute("id", tab.value.window);
+        if (!list[tab.window]) {
+            list[tab.window] = document.createElement("ul");
+            list[tab.window].setAttribute("id", tab.window);
         }
 
-        list[tab.value.window].append(tabItem);
+        list[tab.window].append(tabItem);
     }
     Object.values(list).forEach((element) => {
         const length = element.getElementsByTagName("li").length;
         document.querySelector("ul").append(length, element);
     });
-});
+})();
 
 document.getElementById("openButton").addEventListener("click", openAll);
 document.getElementById("deleteButton").addEventListener("click", deleteAll);
 
-function openAll() {
-    chrome.runtime.sendMessage({ message: "getTabs" }, (tabs) => {
-        for (const tab of tabs) {
-            chrome.tabs.create({
-                active: false,
-                url: tab.value.url,
-                windowId: tab.value.window,
-            });
-        }
-    });
+async function openAll() {
+    const tabs = await chrome.runtime.sendMessage({ message: "getTabs" });
+
+    for (const [_, tab] of Object.entries(tabs)) {
+        chrome.tabs.create({
+            active: false,
+            url: tab.url,
+            windowId: tab.window,
+        });
+    }
 }
 
 function deleteAll() {
