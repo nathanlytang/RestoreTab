@@ -12,7 +12,9 @@
     },
     "permissions": [
         "tabs",
-        "storage"
+        "storage",
+        "contextMenus",
+        "unlimitedStorage"
     ],
     "icons": {
         "64": "images/icons/icon.png"
