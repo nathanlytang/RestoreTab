@@ -1,7 +1,101 @@
+:root {
+    --popupWidth: 500px;
+    --windowHeaderHeight: 3rem;
+    --borderColor: rgba(128, 128, 128, 0.5);
+}
+
+html {
+    width: var(--popupWidth);
+    border-collapse: collapse;
+    overflow-wrap: break-word;
+}
+
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 ul {
-    display: table-row;
+    list-style: none;
+    padding-left: 0;
+}
+
+a, a:visited {
+    color: inherit;
+    text-decoration: none;
+}
+
+#popupHeader {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 2rem 2rem;
+    grid-template-areas:
+        'popupTitle openAllButton deleteAllButton';
+}
+
+#popupTitle {
+    grid-area: popupTitle;
+}
+
+#openButton {
+    grid-area: openAllButton;
+}
+
+#deleteButton {
+    grid-area: deleteAllButton;
+}
+
+#windowItem {
+    border: 1px solid var(--borderColor);
+    border-radius: 5px;
+    margin: 1rem 0;
+    display: grid;
+    grid-template-rows: var(--windowHeaderHeight) 1fr;
+    grid-template-areas:
+        'header'
+        'list';
+}
+
+#windowHeader {
+    position: relative;
+    padding: 0rem 0.5rem;
+    border-bottom: 1px solid var(--borderColor);
+    display: grid;
+    grid-template-columns: 1fr 2rem 2rem;
+    grid-template-areas:
+        'windowTitle openWindowButton deleteWindowButton';
+}
+
+#windowTitle {
+    height: var(--windowHeaderHeight);
+    line-height: var(--windowHeaderHeight);
+    margin: 0;
+    grid-area: windowTitle;
+}
+
+#openWindowButton {
+    grid-area: openWindowButton;
+}
+
+#deleteWindowButton {
+    grid-area: deleteWindowButton;
+}
+
+.windowList {
+    padding: 0.5rem;
+    grid-area: list;
+    max-width: calc(var(--popupWidth) - 2rem);
+}
+
+.menuButton {
+    width: 80%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    opacity: 60%;
+}
+
+.menuButton:hover {
+    cursor: pointer;
+    opacity: 100%;
 }
