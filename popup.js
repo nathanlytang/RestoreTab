@@ -1,60 +1,60 @@
-// window.addEventListener("error", (event) => {
-//     return new Error(event)
-// })
-
-// const template = document.getElementById("tabsTemplate");
-
-// const tabs = await getAllFromStore();
 (async () => {
     const list = {};
-    const tabs = await chrome.runtime.sendMessage({ message: "getTabs" });
-    // TODO: Check window ID to group tabs by window
-
-    console.log(tabs);
-
-    // if (!Array.isArray(tabs)) {
-    //     tabs = [tabs];
-    // }
+    const tabs = await chrome.runtime.sendMessage({ message: "getAll" });
+    const windowTemplate = document.getElementById("windowTemplate");
+    const listTemplate = document.getElementById("listTemplate");
 
     for (const [_, tab] of Object.entries(tabs)) {
-        let tabItem;
         try {
-            tabItem = document.createElement("span");
             const url = new URL(tab.url);
-            const tabHTML = `
-                    <li>
-                        <h3>
-                            <a href="${url}" target="_blank" class="title">${tab.title}</a>
-                        </h3>
-                    </li>
-                `;
+            const tabItem = listTemplate.content.cloneNode(true);
 
-            // <h3 class="title">${tab.title}</h3>
-            // <a href="${url}" target="_blank" class="path">${url}</a>
+            tabItem.querySelector(".linkItem").textContent = tab.title;
+            tabItem.querySelector(".linkItem").href = url;
 
-            tabItem.innerHTML = tabHTML;
+            // Create window object if it does not already exist
+            if (!list[tab.window]) {
+                const windowList = windowTemplate.content.cloneNode(true);
+                windowList.querySelector("ul").setAttribute("id", tab.window);
+                list[tab.window] = windowList;
+            }
+            list[tab.window].querySelector("ul").append(tabItem);
         } catch (err) {
             console.error(err, JSON.stringify(tab));
         }
-
-        if (!list[tab.window]) {
-            list[tab.window] = document.createElement("ul");
-            list[tab.window].setAttribute("id", tab.window);
-        }
-
-        list[tab.window].append(tabItem);
     }
+
+    // Get length of each window and append windows to list
+    let counter = 1;
     Object.values(list).forEach((element) => {
-        const length = element.getElementsByTagName("li").length;
-        document.querySelector("ul").append(length, element);
+        // Get length of elements and update window title
+        const length = element.querySelector("ul").getElementsByTagName("li").length;
+        element.querySelector("#windowTitle").textContent = `Window ${counter} (${length})`;
+
+        // Individual window button listeners
+        element.querySelector("#openWindowButton").addEventListener("click", openWindow);
+        element.querySelector("#deleteWindowButton").addEventListener("click", deleteWindow);
+        element.querySelector("#openWindowButton").windowId = element.querySelector("ul").id;
+        element.querySelector("#deleteWindowButton").windowId = element.querySelector("ul").id;
+
+        // Append element to the document and update window counter
+        document.querySelector("ul").append(element);
+        counter++;
     });
+
+    // If no windows or tabs, display 404 message
+    if (counter === 1) {
+        document.getElementById("404").style.display = "block";
+    }
 })();
 
+// Open all / delete all button listeners
 document.getElementById("openButton").addEventListener("click", openAll);
 document.getElementById("deleteButton").addEventListener("click", deleteAll);
 
+// Open all tabs/windows in their respective windows
 async function openAll() {
-    const tabs = await chrome.runtime.sendMessage({ message: "getTabs" });
+    const tabs = await chrome.runtime.sendMessage({ message: "getAll" });
 
     for (const [_, tab] of Object.entries(tabs)) {
         chrome.tabs.create({
@@ -65,6 +65,9 @@ async function openAll() {
     }
 }
 
+/**
+ * Delete all tabs/windows
+ */
 function deleteAll() {
     chrome.runtime.sendMessage({ message: "deleteAll" }, () => {
         const list = document.querySelector("#tabList");
@@ -72,4 +75,20 @@ function deleteAll() {
             list.removeChild(list.firstChild);
         }
     });
+}
+
+/**
+ * Open all tabs within a window grouping
+ * @param {PointerEvent} event 
+ */
+async function openWindow(event) {
+    const windowId = event.target.windowId;
+}
+
+/**
+ * Delete all tabs within a window grouping
+ * @param {PointerEvent} event 
+ */
+function deleteWindow(event) {
+    const windowId = event.target.windowId;
 }
