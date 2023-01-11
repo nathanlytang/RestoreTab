@@ -3,15 +3,35 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/popup.css" />
 </head>
 
 <body>
-    <button id="openButton">Open All</button>
-    <button id="deleteButton">Delete All</button>
-    <h1>Open Tabs</h1>
+    <div id="popupHeader">
+        <h1 id="popupTitle">Open Tabs</h1>
+        <img class="menuButton" id="openButton" title="Open All" alt="Open All" src="/images/icons/open_in_browser.svg">
+        <img class="menuButton" id="deleteButton" title="Delete All" alt="Delete All" src="/images/icons/delete_sweep.svg">
+    </div>
+
+    <template id="windowTemplate">
+        <div id="windowItem">
+            <div id="windowHeader">
+                <h2 id="windowTitle"></h2>
+                <img class="menuButton" id="openWindowButton" title="Open Window" alt="Open Window" src="/images/icons/open_in_new.svg">
+                <img class="menuButton" id="deleteWindowButton" title="Delete Window" alt="Delete Window" src="/images/icons/delete.svg">
+            </div>
+            <ul class="windowList"></ul>
+        </div>
+    </template>
+
+    <template id="listTemplate">
+        <li>
+            <p>
+                <a href="" target="_blank" class="linkItem"></a>
+            </p>
+        </li>
+    </template>
 
     <ul id="tabList"></ul>
 
