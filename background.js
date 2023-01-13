@@ -45,6 +45,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.message === "deleteAll") {
         chrome.storage.local.clear();
         sendResponse(true);
+    } else if (request.message === "deleteWindow") {
+        chrome.storage.local.remove(request.keys);
+        sendResponse(true);
     }
 
     return true;
