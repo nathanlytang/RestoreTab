@@ -1,14 +1,19 @@
 :root {
     --popupWidth: 500px;
+    --minHeight: 5rem;
+    --maxHeight: 33rem;
     --windowHeaderHeight: 3rem;
-    --borderColor: rgba(128, 128, 128, 0.5);
     color-scheme: var(--colorScheme);
 }
 
 @media (prefers-color-scheme: light) {
     :root {
+        --headerColor: rgba(232, 126, 39, 1);
         --textColor: rgba(27, 27, 27, 1);
-        --backgroundColor: rgba(255, 255, 255, 1);
+        --backgroundColor: rgba(245, 245, 245, 1);
+        --itemBackgroundColor: rgba(255, 255, 255, 1);
+        --borderColor: rgba(200, 200, 200, 0.2);
+        --shadowColor: rgba(0, 0, 0, 0.2);
         --button: invert(0);
         --colorScheme: light;
     }
@@ -16,8 +21,12 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --textColor: rgba(240, 240, 240, 1);
+        --headerColor: rgb(240, 151, 78);
+        --textColor: rgba(230, 230, 230, 1);
         --backgroundColor: rgba(40, 40, 40, 1);
+        --itemBackgroundColor: rgba(50, 50, 50, 1);
+        --borderColor: rgba(20, 20, 20, 0.2);
+        --shadowColor: rgba(0, 0, 0, 0.2);
         --button: invert(1);
         --colorScheme: dark;
     }
@@ -33,6 +42,21 @@ body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     color: var(--textColor);
     background-color: var(--backgroundColor);
+    margin: 0;
+}
+
+h1 {
+    font-family: MajorMonoDisplay, monospace;
+    font-size: 2rem;
+    letter-spacing: -0.25rem;
+    word-spacing: -0.7rem;
+    color: var(--headerColor);
+    font-weight: 800;
+}
+
+h2 {
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 ul {
@@ -45,8 +69,24 @@ a, a:visited {
     text-decoration: none;
 }
 
+a:hover {
+    opacity: 80%;
+}
+
+p {
+    margin: 0.5rem auto;
+}
+
 #popupHeader {
-    position: relative;
+    background-color: var(--itemBackgroundColor);
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--borderColor);
+    box-shadow: 0px 1px 1px var(--shadowColor);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    overflow: hidden;
+    height: 3rem;
     display: grid;
     grid-template-columns: 1fr 2rem 2rem;
     grid-template-areas:
@@ -58,18 +98,45 @@ a, a:visited {
     margin: 0.5rem 0;
 }
 
+#titleImage {
+    height: 1.5rem;
+}
+
 #openButton {
     grid-area: openAllButton;
+    /* filter: invert(62%) sepia(55%) saturate(5124%) hue-rotate(184deg) brightness(94%) contrast(93%); */
 }
 
 #deleteButton {
     grid-area: deleteAllButton;
 }
 
+#deleteButton:hover {
+    filter: invert(31%) sepia(34%) saturate(5593%) hue-rotate(346deg) brightness(99%) contrast(86%);
+}
+
+#popupBody {
+    min-height: var(--minHeight);
+    max-height: var(--maxHeight);
+    width: var(--popupWidth);
+    overflow-y: auto;
+}
+
+#fourOhFour {
+    line-height: var(--minHeight);
+    filter: opacity(70%);
+    text-align: center;
+    margin: 1rem;
+}
+
 #windowItem {
+    background-color: var(--itemBackgroundColor);
     border: 1px solid var(--borderColor);
-    border-radius: 5px;
-    margin: 1rem 0;
+    box-shadow: 0px 0.5px 1px var(--shadowColor);
+    border-radius: 10px;
+    margin: 1rem;
+    padding: 0rem 1rem 1rem 1rem;
+    z-index: 0;
     display: grid;
     grid-template-rows: var(--windowHeaderHeight) 1fr;
     grid-template-areas:
@@ -79,12 +146,11 @@ a, a:visited {
 
 #windowHeader {
     position: relative;
-    padding: 0rem 0.5rem;
     border-bottom: 1px solid var(--borderColor);
     display: grid;
-    grid-template-columns: 1fr 2rem 2rem;
+    grid-template-columns: 1fr 2rem 2rem 2rem;
     grid-template-areas:
-        'windowTitle openWindowButton deleteWindowButton';
+        'windowTitle windowLength openWindowButton deleteWindowButton';
 }
 
 #windowTitle {
@@ -94,18 +160,31 @@ a, a:visited {
     grid-area: windowTitle;
 }
 
+#windowLength {
+    height: var(--windowHeaderHeight);
+    line-height: var(--windowHeaderHeight);
+    margin: 0;
+    grid-area: windowLength;
+}
+
 #openWindowButton {
     grid-area: openWindowButton;
+    /* filter: invert(62%) sepia(55%) saturate(5124%) hue-rotate(184deg) brightness(94%) contrast(93%); */
 }
 
 #deleteWindowButton {
     grid-area: deleteWindowButton;
 }
 
+#deleteWindowButton:hover {
+    filter: invert(31%) sepia(34%) saturate(5593%) hue-rotate(346deg) brightness(99%) contrast(86%);
+}
+
 .windowList {
     padding: 0.5rem;
     grid-area: list;
-    max-width: calc(var(--popupWidth) - 2rem);
+    max-width: calc(var(--popupWidth) - 6.2rem);
+    border-bottom: 1px solid var(--borderColor);
 }
 
 .menuButton {
@@ -114,7 +193,7 @@ a, a:visited {
     top: 0;
     bottom: 0;
     margin: auto;
-    opacity: 60%;
+    opacity: 70%;
     filter: var(--button);
 }
 
