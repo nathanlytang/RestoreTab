@@ -9,21 +9,26 @@
 
 <body>
     <div id="popupHeader">
-        <h1 id="popupTitle">Open Tabs</h1>
+        <h1 id="popupTitle"><img id="titleImage" src="/images/favicon/orangeR.png"> RestoreTab</h1>
         <img class="menuButton" id="openButton" title="Open All" alt="Open All" src="/images/icons/open_in_browser.svg">
-        <img class="menuButton" id="deleteButton" title="Delete All" alt="Delete All" src="/images/icons/delete_sweep.svg">
+        <img class="menuButton" id="deleteButton" title="Discard All" alt="Discard All" src="/images/icons/delete_sweep.svg">
     </div>
-    <p id="404" style="display: none;">🤖 Error 404: Tabs not found.  Open some tabs to see them here!</p>
+
+    <div id="popupBody">
+        <p id="fourOhFour" style="display: none;">🤖 Error 404: Tabs not found. Open some tabs to see them here!</p>
+        <ul id="tabList"></ul>
+    </div>
 
     <template id="windowTemplate">
-        <div id="windowItem">
+        <li id="windowItem">
             <div id="windowHeader">
                 <h2 id="windowTitle"></h2>
+                <p id="windowLength"></p>
                 <img class="menuButton" id="openWindowButton" title="Open Window" alt="Open Window" src="/images/icons/open_in_new.svg">
-                <img class="menuButton" id="deleteWindowButton" title="Delete Window" alt="Delete Window" src="/images/icons/delete.svg">
+                <img class="menuButton" id="deleteWindowButton" title="Discard Window" alt="Discard Window" src="/images/icons/delete.svg">
             </div>
             <ul class="windowList"></ul>
-        </div>
+        </li>
     </template>
 
     <template id="listTemplate">
@@ -33,8 +38,6 @@
             </p>
         </li>
     </template>
-
-    <ul id="tabList"></ul>
 
     <script src="popup.js" type="module"></script>
 </body>
