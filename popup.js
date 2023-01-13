@@ -1,4 +1,4 @@
-let windowCounter = 1;
+let windowCounter = 0;
 
 (async () => {
     const tabs = await chrome.runtime.sendMessage({ message: "getAll" });
@@ -8,9 +8,7 @@ let windowCounter = 1;
     displayWindowGroup(list);
 
     // If no windows or tabs, display 404 message
-    if (windowCounter === 1) {
-        document.getElementById("404").style.display = "block";
-    }
+    displayNoWindow();
 })();
 
 /**
@@ -20,19 +18,16 @@ let windowCounter = 1;
  */
 function populateTemplates(tabs) {
     const list = {};
-    const windowTemplate = document.getElementById("windowTemplate");
 
     for (const [id, tab] of Object.entries(tabs)) {
         try {
             const tabItem = populateTabTemplate({ ...tab, id: id });
 
             // Create window object if it does not already exist
-            if (!list[tab.window]) {
-                const windowList = windowTemplate.content.cloneNode(true);
-                windowList.querySelector("ul").setAttribute("id", tab.window);
-                list[tab.window] = windowList;
+            if (!list[tab.windowId]) {
+                list[tab.windowId] = populateWindowTemplate(tab.windowId);
             }
-            list[tab.window].querySelector("ul").append(tabItem);
+            list[tab.windowId].querySelector("ul").append(tabItem);
         } catch (err) {
             console.error(err, JSON.stringify(tab));
         }
@@ -43,7 +38,7 @@ function populateTemplates(tabs) {
 
 /**
  * Populate the tab template with tab information
- * @param {JSON} tab 
+ * @param {JSON} tab
  * @returns Document fragment
  */
 function populateTabTemplate(tab) {
@@ -59,14 +54,30 @@ function populateTabTemplate(tab) {
 }
 
 /**
+ * Create a window grouping using the window template
+ * @param {Number} windowId
+ * @returns windowList HTMLElement
+ */
+function populateWindowTemplate(windowId) {
+    const windowTemplate = document.getElementById("windowTemplate");
+    const windowList = windowTemplate.content.cloneNode(true);
+    windowList.querySelector("ul").setAttribute("id", windowId);
+    return windowList;
+}
+
+/**
  * Add window grouping element to the list and display
  * @param {Array} list Array of HTMLElement
  */
 function displayWindowGroup(list) {
+    document.getElementById("fourOhFour").style.display = "none";
     Object.values(list).forEach((element) => {
+        windowCounter++;
+
         // Get length of elements and update window title
         const length = element.querySelector("ul").getElementsByTagName("li").length;
-        element.querySelector("#windowTitle").textContent = `Window ${windowCounter} (${length})`;
+        element.querySelector("#windowTitle").textContent = `Window ${windowCounter}`;
+        element.querySelector("#windowLength").textContent = length;
 
         // Individual window button listeners
         element.querySelector("#openWindowButton").addEventListener("click", openWindow);
@@ -76,9 +87,25 @@ function displayWindowGroup(list) {
 
         // Append element to the document and update window counter
         document.querySelector("ul").append(element);
-
-        windowCounter++;
     });
+}
+
+/**
+ * Update a window group's tab count
+ * @param {HTMLElement} windowGroup
+ */
+function updateTabCount(windowGroup) {
+    const length = windowGroup.querySelector("ul").getElementsByTagName("li").length;
+    windowGroup.querySelector("#windowLength").textContent = length;
+}
+
+/**
+ * Display no windows message if there are no more windows
+ */
+function displayNoWindow() {
+    if (windowCounter <= 0) {
+        document.getElementById("fourOhFour").style.display = "block";
+    }
 }
 
 // Open all / delete all button listeners
@@ -95,7 +122,7 @@ async function openAll() {
         chrome.tabs.create({
             active: false,
             url: tab.url,
-            windowId: tab.window,
+            windowId: tab.windowId,
         });
     }
 }
@@ -109,7 +136,8 @@ function deleteAll() {
         while (list.firstChild) {
             list.removeChild(list.firstChild);
         }
-        document.getElementById("404").style.display = "block";
+        windowCounter = 0;
+        displayNoWindow();
     });
 }
 
@@ -154,7 +182,7 @@ async function openWindow(event) {
                             tabs[tab.id] = {};
                             tabs[tab.id].title = title;
                             tabs[tab.id].url = url;
-                            tabs[tab.id].window = tab.windowId;
+                            tabs[tab.id].windowId = tab.windowId;
                             resolve(tab);
                         }
                     );
@@ -189,12 +217,6 @@ function deleteWindow(event) {
     chrome.runtime.sendMessage({ message: "deleteWindow", keys: tabIdList }, () => {
         UIdeleteWindowGroupById(windowId);
     });
-
-    windowCounter--;
-
-    if (windowCounter === 1) {
-        document.getElementById("404").style.display = "block";
-    }
 }
 
 /**
@@ -205,6 +227,16 @@ function UIdeleteWindowGroupById(windowId) {
     const list = document.getElementById(windowId);
     if (list) {
         list.parentElement.remove();
+        windowCounter--;
+        displayNoWindow();
+
+        // Update all window group numbers when window is deleted
+        const windowGroups = document.querySelector("#tabList");
+        let tempWindowCounter = 0;
+        for (const windowItem of windowGroups.children) {
+            tempWindowCounter++;
+            windowItem.querySelector("#windowTitle").textContent = `Window ${tempWindowCounter}`;
+        }
     }
 }
 
@@ -249,12 +281,12 @@ chrome.tabs.onCreated.addListener((tab) => {
         tab.url = tab.pendingUrl;
     }
 
-    // If the window group that the tab belongs to does not exist, then create new window
     if (document.getElementById(tab.windowId) === null) {
+        // If the window group that the tab belongs to does not exist, then create new window
         const list = populateTemplates({ [tab.id]: tab });
         displayWindowGroup(list);
-    // Else append to existing window group
     } else {
+        // Else append to existing window group
         const tabItem = populateTabTemplate(tab);
         const list = document.getElementById(tab.windowId);
         list.appendChild(tabItem);
@@ -272,7 +304,38 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         tabElement.href = changeInfo.url;
         tabElement.textContent = tab.title;
     }
-    if (changeInfo.status) {
-        tabElement.textContent = tab.title === "..." ? tab.url : tab.title;
+    if (changeInfo.status === "complete") {
+        if (tab.title !== "...") {
+            tabElement.textContent = tab.title;
+        }
     }
 });
+
+/**
+ * Update UI when tab is moved between windows or new window created
+ */
+chrome.tabs.onAttached.addListener((tabId, attachInfo) => {
+    const tabElement = document.getElementById(tabId).parentElement.parentElement;
+    const oldWindowGroup = tabElement.parentElement.parentElement;
+    tabElement.remove();
+    updateTabCount(oldWindowGroup);
+
+    const newWindow = document.getElementById(attachInfo.newWindowId);
+
+    if (newWindow === null) {
+        // If the new window does not exist, then create and display the new window
+        const windowGroup = populateWindowTemplate(attachInfo.newWindowId);
+        windowGroup.querySelector("ul").appendChild(tabElement);
+        displayWindowGroup([windowGroup]);
+    } else {
+        // Else append to existing window group
+        newWindow.appendChild(tabElement);
+        updateTabCount(newWindow.parentElement);
+    }
+});
+
+const font = new FontFace(
+    "MajorMonoDisplay",
+    "url(/fonts/Major_Mono_Display/MajorMonoDisplay-Regular.ttf)"
+);
+document.fonts.add(font);
