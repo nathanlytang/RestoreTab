@@ -2,6 +2,25 @@
     --popupWidth: 500px;
     --windowHeaderHeight: 3rem;
     --borderColor: rgba(128, 128, 128, 0.5);
+    color-scheme: var(--colorScheme);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --textColor: rgba(27, 27, 27, 1);
+        --backgroundColor: rgba(255, 255, 255, 1);
+        --button: invert(0);
+        --colorScheme: light;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --textColor: rgba(240, 240, 240, 1);
+        --backgroundColor: rgba(40, 40, 40, 1);
+        --button: invert(1);
+        --colorScheme: dark;
+    }
 }
 
 html {
@@ -12,6 +31,8 @@ html {
 
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--textColor);
+    background-color: var(--backgroundColor);
 }
 
 ul {
@@ -94,6 +115,7 @@ a, a:visited {
     bottom: 0;
     margin: auto;
     opacity: 60%;
+    filter: var(--button);
 }
 
 .menuButton:hover {
