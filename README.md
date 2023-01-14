@@ -18,3 +18,7 @@ RestoreTab is a browser extension that allows you stop worrying about losing you
 
 ### Incognito
 Recording of Incognito is disabled by default. It can be enabled by navigating to the Chrome extension settings and enabling "Allow in Incognito".
+
+## To Come
+- [ ] Incognito switch
+- [ ] Theme colors
