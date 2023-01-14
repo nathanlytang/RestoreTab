@@ -15,3 +15,6 @@ RestoreTab is a browser extension that allows you stop worrying about losing you
 * Open individual windows and tabs
 * Delete all windows from RestoreTab record history
 * Delete individual windows from record history
+
+### Incognito
+Recording of Incognito is disabled by default. It can be enabled by navigating to the Chrome extension settings and enabling "Allow in Incognito".

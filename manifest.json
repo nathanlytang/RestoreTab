@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "RestoreTab",
-    "description": "Restore incognito sessions from a crashed state",
+    "description": "Keep track of your Chrome sessions and restore tabs from a crash, Incognito included. All locally.",
     "version": "1.0",
     "action": {
         "default_popup": "popup.html"
