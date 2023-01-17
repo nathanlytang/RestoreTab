@@ -333,9 +333,3 @@ chrome.tabs.onAttached.addListener((tabId, attachInfo) => {
         updateTabCount(newWindow.parentElement);
     }
 });
-
-const font = new FontFace(
-    "MajorMonoDisplay",
-    "url(/fonts/Major_Mono_Display/MajorMonoDisplay-Regular.ttf)"
-);
-document.fonts.add(font);

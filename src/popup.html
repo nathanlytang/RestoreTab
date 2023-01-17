@@ -4,14 +4,15 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preload" as="font" href="fonts/MajorMonoDisplay.woff2" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="css/popup.css" />
 </head>
 
 <body>
     <div id="popupHeader">
-        <h1 id="popupTitle"><img id="titleImage" src="/images/favicon/orangeR.png"> RestoreTab</h1>
-        <img class="menuButton" id="openButton" title="Open All" alt="Open All" src="/images/icons/open_in_browser.svg">
-        <img class="menuButton" id="deleteButton" title="Discard All" alt="Discard All" src="/images/icons/delete_sweep.svg">
+        <h1 id="popupTitle"><img id="titleImage" src="images/favicon/orangeR-128.png"> RestoreTab</h1>
+        <img class="menuButton" id="openButton" title="Open All" alt="Open All" src="images/icons/open_in_browser.svg">
+        <img class="menuButton" id="deleteButton" title="Discard All" alt="Discard All" src="images/icons/delete_sweep.svg">
     </div>
 
     <div id="popupBody">
@@ -24,8 +25,8 @@
             <div id="windowHeader">
                 <h2 id="windowTitle"></h2>
                 <p id="windowLength"></p>
-                <img class="menuButton" id="openWindowButton" title="Open Window" alt="Open Window" src="/images/icons/open_in_new.svg">
-                <img class="menuButton" id="deleteWindowButton" title="Discard Window" alt="Discard Window" src="/images/icons/delete.svg">
+                <img class="menuButton" id="openWindowButton" title="Open Window" alt="Open Window" src="images/icons/open_in_new.svg">
+                <img class="menuButton" id="deleteWindowButton" title="Discard Window" alt="Discard Window" src="images/icons/delete.svg">
             </div>
             <ul class="windowList"></ul>
         </li>
@@ -39,7 +40,7 @@
         </li>
     </template>
 
-    <script src="popup.js" type="module"></script>
+    <script src="js/popup.js" type="module"></script>
 </body>
 
 </html>

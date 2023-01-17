@@ -32,6 +32,17 @@
     }
 }
 
+@font-face {
+    font-family: 'MajorMonoDisplay';
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    /* Read next point */
+    unicode-range: U+000-5FF;
+    /* Download only latin glyphs */
+    src: local('MajorMonoDisplay-Regular'), url('../fonts/MajorMonoDisplay.woff2') format('woff2');
+}
+
 html {
     width: var(--popupWidth);
     border-collapse: collapse;

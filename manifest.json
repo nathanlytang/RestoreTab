@@ -4,10 +4,10 @@
     "description": "Keep track of your Chrome sessions and restore tabs from a crash, Incognito included. All locally.",
     "version": "1.0",
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "src/popup.html"
     },
     "background": {
-        "service_worker": "background.js",
+        "service_worker": "src/js/background.js",
         "type": "module"
     },
     "permissions": [
@@ -16,6 +16,6 @@
         "unlimitedStorage"
     ],
     "icons": {
-        "512": "images/favicon/orangeR.png"
+        "512": "src/images/favicon/orangeR-128.png"
     }
 }

@@ -1,6 +1,6 @@
 const storage = chrome.storage.local;
 
-chrome.action.setIcon({ path: "images/favicon/orange64.png" });
+chrome.action.setIcon({ path: "../images/favicon/orange64.png" });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
     if (!tab.id || !tab.title || !tab.url) return;

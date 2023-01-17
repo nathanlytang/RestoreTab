@@ -1,4 +1,4 @@
-<h1 align="center"><img style="height: 32px;" src="/images/favicon/orangeR.png"/>RestoreTab</h1>
+<h1 align="center"><img style="height: 32px;" src="doc/images/orangeR.png"/>RestoreTab</h1>
 
 <h3 align="center">Keep track of your Chrome sessions and restore tabs from a crash, Incognito included. All locally.</h3>
 
