@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/options.css" />
+</head>
+
+<body>
+    <h1>Settings</h1>
+
+    <form id="settings">
+        <label for="theme" id="theme_title">Theme:</label>
+        <select name="theme" id="theme_setting">
+            <option value="black">Black</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="orange">Orange</option>
+            <option value="purple">Purple</option>
+            <option value="red">Red</option>
+            <option value="white">White</option>
+        </select>
+        <label for="incognito" id="incognito_title">Allow Incognito:</label>
+        <select name="incognito" id="incognito_setting">
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+        </select>
+        <input id="save" type="button" value="Save">
+    </form>
+
+    <script src="js/options.js" type="module"></script>
+</body>
+
+</html>

@@ -1,0 +1,35 @@
+body {
+    padding: 0 10vw;
+}
+
+#settings {
+    display: grid;
+    grid-template-columns: 10rem 5rem;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0.5rem 0px;
+    grid-template-areas:
+        "theme theme_set"
+        "incog incog_set"
+        "save save";
+}
+
+#theme_title {
+    grid-area: theme;
+}
+
+#theme_seting {
+    grid-area: theme_set;
+}
+
+#incognito_title {
+    grid-area: incog;
+}
+
+#incognito_setting {
+    grid-area: incog_set;
+}
+
+#save {
+    grid-area: save;
+    width: 30%;
+}
