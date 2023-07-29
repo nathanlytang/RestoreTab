@@ -1,6 +1,27 @@
 const storage = chrome.storage.local;
 
-chrome.action.setIcon({ path: "../images/favicon/orange64.png" });
+(async () => {
+    const settings = await storage.get("settings");
+    dispatchEvent(new CustomEvent("getSettings", { detail: settings }));
+})();
+
+function faviconUrl(u) {
+    const url = new URL(chrome.runtime.getURL("/_favicon/"));
+    url.searchParams.set("pageUrl", u);
+    url.searchParams.set("size", "16");
+    return url.toString();
+}
+
+self.addEventListener("getSettings", (event) => {
+    let settings = event.detail.settings;
+    if (!settings) {
+        settings = {
+            theme: "orange",
+        };
+    }
+    const theme = settings.theme ? settings.theme : "orange";
+    chrome.action.setIcon({ path: `../images/favicon/${theme}.png` });
+});
 
 chrome.tabs.onCreated.addListener(async (tab) => {
     if (!tab.id || !tab.title || !tab.url) return;
@@ -10,6 +31,7 @@ chrome.tabs.onCreated.addListener(async (tab) => {
             title: tab.title,
             url: tab.url,
             windowId: tab.windowId,
+            favicon: faviconUrl(tab.url)
         },
     });
 });
@@ -21,6 +43,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 title: tab.title,
                 url: tab.url,
                 windowId: tab.windowId,
+                favicon: faviconUrl(tab.url)
             },
         });
     }
@@ -37,6 +60,7 @@ chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
             title: tab[tabId].title,
             url: tab[tabId].url,
             windowId: attachInfo.newWindowId,
+            favicon: faviconUrl(tab[tabId].url)
         },
     });
 });
@@ -52,17 +76,42 @@ chrome.tabs.onReplaced.addListener(async (addedTabId, removedTabId) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.message === "getAll") {
-        storage.get(null, (tabs) => {
-            sendResponse(tabs);
-        });
-    } else if (request.message === "deleteAll") {
-        storage.clear();
-        sendResponse(true);
-    } else if (request.message === "deleteWindow") {
-        storage.remove(request.keys);
-        sendResponse(true);
+    const senderArg = sender.url.split("/");
+    const senderName = senderArg[senderArg.length - 1].split(".")[0];
+
+    if (senderName === "popup") {
+        if (request.message === "getAll") {
+            storage.get(null, (tabs) => {
+                delete tabs.settings;
+                sendResponse(tabs);
+            });
+        } else if (request.message === "deleteAll") {
+            storage.get("settings", (settings) => {
+                storage.clear();
+                storage.set(settings);
+            });
+            sendResponse(true);
+        } else if (request.message === "deleteWindow") {
+            storage.remove(request.keys);
+            sendResponse(true);
+        } else if (request.message === "getSettings") {
+            storage.get("settings", (settings) => {
+                sendResponse(settings);
+            });
+        }
+    } else if (senderName === "options") {
+        if (request.message === "save") {
+            storage.set({
+                settings: {
+                    theme: request.settings.theme,
+                    incognito: request.settings.incognito,
+                },
+            });
+        }
     }
 
     return true;
 });
+
+
+// TODO: Change settings to store in chrome.storage.sync instead of local

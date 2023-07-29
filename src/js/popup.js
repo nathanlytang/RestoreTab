@@ -1,6 +1,10 @@
 let windowCounter = 0;
+let settings;
 
 (async () => {
+    settings = await chrome.runtime.sendMessage({ message: "getSettings" });
+    dispatchEvent(new CustomEvent("getSettings", { detail: settings }));
+
     const tabs = await chrome.runtime.sendMessage({ message: "getAll" });
     const list = populateTemplates(tabs);
 
@@ -8,8 +12,50 @@ let windowCounter = 0;
     displayWindowGroup(list);
 
     // If no windows or tabs, display 404 message
-    displayNoWindow();
+    display404();
 })();
+
+self.addEventListener("getSettings", (event) => {
+    const settings = event.detail.settings;
+    setColorScheme(settings);
+});
+
+/**
+ * Set the color theme of the popup from settings
+ * @param {JSON} settings
+ */
+function setColorScheme(settings) {
+    const themes = {
+        light: {
+            black: "rgba(30, 30, 30, 1)",
+            blue: "rgba(116, 208, 251, 1)",
+            green: "rgba(75, 203, 75, 1)",
+            orange: "rgba(232, 126, 39, 1)",
+            purple: "rgba(201, 74, 202, 1)",
+            red: "rgba(255, 157, 155, 1)",
+            white: "rgba(220, 220, 220, 1)",
+        },
+        dark: {
+            black: "rgba(80, 80, 80, 1)",
+            blue: "rgba(126, 218, 261, 1)",
+            green: "rgba(85, 213, 85, 1)",
+            orange: "rgba(240, 151, 78, 1)",
+            purple: "rgba(211, 84, 212, 1)",
+            red: "rgba(255, 167, 165, 1)",
+            white: "rgba(240, 240, 240, 1",
+        },
+    };
+    if (!settings || !settings.theme) return;
+    const theme = settings.theme;
+
+    document.getElementById("titleImage").src = `images/favicon/${theme}R.png`;
+
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.documentElement.style.setProperty("--headerColor", themes.dark[theme]);
+    } else {
+        document.documentElement.style.setProperty("--headerColor", themes.light[theme]);
+    }
+}
 
 /**
  * Populate templates and generate list of elements
@@ -46,9 +92,12 @@ function populateTabTemplate(tab) {
     const url = new URL(tab.url);
     const tabItem = listTemplate.content.cloneNode(true);
 
-    tabItem.querySelector(".linkItem").id = tab.id;
-    tabItem.querySelector(".linkItem").textContent = tab.title;
-    tabItem.querySelector(".linkItem").href = url;
+    tabItem.querySelector(".linkTitle").id = tab.id;
+    tabItem.querySelector(".linkTitle").textContent = tab.title;
+    tabItem.querySelectorAll(".linkLink").forEach((link) => {
+        link.href = url;
+    });
+    tabItem.querySelector(".linkIcon").src = tab.favicon;
 
     return tabItem;
 }
@@ -102,7 +151,7 @@ function updateTabCount(windowGroup) {
 /**
  * Display no windows message if there are no more windows
  */
-function displayNoWindow() {
+function display404() {
     if (windowCounter <= 0) {
         document.getElementById("fourOhFour").style.display = "block";
     }
@@ -111,6 +160,9 @@ function displayNoWindow() {
 // Open all / delete all button listeners
 document.getElementById("openButton").addEventListener("click", openAll);
 document.getElementById("deleteButton").addEventListener("click", deleteAll);
+document.getElementById("settingsButton").addEventListener("click", () => {
+    chrome.runtime.openOptionsPage();
+});
 
 /**
  * Open all tabs/windows in their respective windows
@@ -137,7 +189,7 @@ function deleteAll() {
             list.removeChild(list.firstChild);
         }
         windowCounter = 0;
-        displayNoWindow();
+        display404();
     });
 }
 
@@ -228,7 +280,7 @@ function UIdeleteWindowGroupById(windowId) {
     if (list) {
         list.parentElement.remove();
         windowCounter--;
-        displayNoWindow();
+        display404();
 
         // Update all window group numbers when window is deleted
         const windowGroups = document.querySelector("#tabList");
@@ -247,7 +299,7 @@ function UIdeleteWindowGroupById(windowId) {
 function UIdeleteTabById(tabId) {
     const link = document.getElementById(tabId);
     if (link) {
-        link.parentElement.parentElement.remove();
+        link.parentElement.remove();
     }
 }
 
