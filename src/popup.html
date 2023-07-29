@@ -10,9 +10,10 @@
 
 <body>
     <div id="popupHeader">
-        <h1 id="popupTitle"><img id="titleImage" src="images/favicon/orangeR-128.png"> RestoreTab</h1>
+        <h1 id="popupTitle"><img id="titleImage" src="images/favicon/orangeR.png"> RestoreTab</h1>
         <img class="menuButton" id="openButton" title="Open All" alt="Open All" src="images/icons/open_in_browser.svg">
         <img class="menuButton" id="deleteButton" title="Discard All" alt="Discard All" src="images/icons/delete_sweep.svg">
+        <img class="menuButton" id="settingsButton" title="Settings" alt="Settings" src="images/icons/settings.svg">
     </div>
 
     <div id="popupBody">
@@ -33,10 +34,9 @@
     </template>
 
     <template id="listTemplate">
-        <li>
-            <p>
-                <a href="" target="_blank" class="linkItem"></a>
-            </p>
+        <li class="linkItem">
+            <a href="" target="_blank" class="linkLink"><img src="" class="linkIcon"></a>
+            <a href="" target="_blank" class="linkTitle linkLink"></a>
         </li>
     </template>
 
