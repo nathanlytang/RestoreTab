@@ -6,6 +6,7 @@
     "action": {
         "default_popup": "src/popup.html"
     },
+    "options_page": "src/options.html",
     "background": {
         "service_worker": "src/js/background.js",
         "type": "module"
@@ -13,9 +14,23 @@
     "permissions": [
         "tabs",
         "storage",
-        "unlimitedStorage"
+        "unlimitedStorage",
+        "favicon"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "_favicon/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ],
+            "extension_ids": [
+                "*"
+            ]
+        }
     ],
     "icons": {
-        "512": "src/images/favicon/orangeR-128.png"
+        "128": "src/images/favicon/orangeR.png"
     }
 }
