@@ -71,7 +71,7 @@ function populateTemplates(tabs) {
 
             // Create window object if it does not already exist
             if (!list[tab.windowId]) {
-                list[tab.windowId] = populateWindowTemplate(tab.windowId);
+                list[tab.windowId] = populateWindowTemplate(tab.windowId, tab.incognito);
             }
             list[tab.windowId].querySelector("ul").append(tabItem);
         } catch (err) {
@@ -107,10 +107,20 @@ function populateTabTemplate(tab) {
  * @param {Number} windowId
  * @returns windowList HTMLElement
  */
-function populateWindowTemplate(windowId) {
+function populateWindowTemplate(windowId, incognito = false) {
     const windowTemplate = document.getElementById("windowTemplate");
     const windowList = windowTemplate.content.cloneNode(true);
+
     windowList.querySelector("ul").setAttribute("id", windowId);
+
+    if (incognito) {
+        const parent = windowList.getElementById(windowId).parentElement;
+        const child = parent.firstElementChild.children[2];
+
+        child.style.display = "inline";
+        parent.dataset.incognito = "true";
+    }
+
     return windowList;
 }
 
@@ -157,6 +167,19 @@ function display404() {
     }
 }
 
+/**
+ * Check if a window is open by its ID
+ * @param {Number} Window ID
+ */
+async function isWindowOpen(id) {
+    try {
+        await chrome.windows.get(id);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 // Open all / delete all button listeners
 document.getElementById("openButton").addEventListener("click", openAll);
 document.getElementById("deleteButton").addEventListener("click", deleteAll);
@@ -195,63 +218,66 @@ function deleteAll() {
 
 /**
  * Open all tabs within a window grouping
+ * - If a window group exists, bring to front
  * @param {PointerEvent} event
  */
 async function openWindow(event) {
-    let windowId = event.target.windowId;
+    let windowId = parseInt(event.target.windowId);
     const list = document.getElementById(windowId).querySelectorAll("li");
+    const setIncognito = document.getElementById(windowId).parentElement.dataset.incognito;
     let pendingTab = undefined;
 
     // Check if window with that ID still exists, if not, create a new window
-    try {
-        await chrome.windows.get(parseInt(windowId));
-    } catch {
-        const window = await chrome.windows.create();
+    if (isWindowOpen(windowId)) {
+        // Bring existing window to the front
+        chrome.windows.update(windowId, { focused: true });
+    } else {
+        const window = await chrome.windows.create({ incognito: setIncognito });
         windowId = window.id;
         pendingTab = window.tabs[0].id;
 
         deleteWindow(event);
-    }
 
-    const tabs = {};
-    const promises = [];
+        const tabs = {};
+        const promises = [];
 
-    // Create tabs within the window group
-    for (const item of list) {
-        promises.push(
-            (() => {
-                return new Promise((resolve) => {
-                    const url = item.querySelector("a").href;
-                    const title = item.querySelector("a").textContent;
+        // Create tabs within the window group
+        for (const item of list) {
+            promises.push(
+                (() => {
+                    return new Promise((resolve) => {
+                        const url = item.querySelector("a").href;
+                        const title = item.querySelector("a").textContent;
 
-                    chrome.tabs.create(
-                        {
-                            active: false,
-                            url: url,
-                            windowId: parseInt(windowId),
-                        },
-                        (tab) => {
-                            tabs[tab.id] = {};
-                            tabs[tab.id].title = title;
-                            tabs[tab.id].url = url;
-                            tabs[tab.id].windowId = tab.windowId;
-                            resolve(tab);
-                        }
-                    );
-                });
-            })()
-        );
-    }
-
-    // Display window groupings
-    Promise.all(promises).then(() => {
-        // Deletes the newtab that is created when the window is created
-        if (pendingTab) {
-            const windowGroupList = populateTemplates(tabs);
-            displayWindowGroup(windowGroupList);
-            chrome.tabs.remove(pendingTab);
+                        chrome.tabs.create(
+                            {
+                                active: false,
+                                url: url,
+                                windowId: parseInt(windowId),
+                            },
+                            (tab) => {
+                                tabs[tab.id] = {};
+                                tabs[tab.id].title = title;
+                                tabs[tab.id].url = url;
+                                tabs[tab.id].windowId = tab.windowId;
+                                resolve(tab);
+                            }
+                        );
+                    });
+                })()
+            );
         }
-    });
+
+        // Display window groupings
+        Promise.all(promises).then(() => {
+            // Deletes the newtab that is created when the window is created
+            if (pendingTab) {
+                const windowGroupList = populateTemplates(tabs);
+                displayWindowGroup(windowGroupList);
+                chrome.tabs.remove(pendingTab);
+            }
+        });
+    }
 }
 
 /**
@@ -376,7 +402,7 @@ chrome.tabs.onAttached.addListener((tabId, attachInfo) => {
 
     if (newWindow === null) {
         // If the new window does not exist, then create and display the new window
-        const windowGroup = populateWindowTemplate(attachInfo.newWindowId);
+        const windowGroup = populateWindowTemplate(attachInfo.newWindowId, attachInfo.incognito);
         windowGroup.querySelector("ul").appendChild(tabElement);
         displayWindowGroup([windowGroup]);
     } else {
@@ -385,3 +411,10 @@ chrome.tabs.onAttached.addListener((tabId, attachInfo) => {
         updateTabCount(newWindow.parentElement);
     }
 });
+
+/**
+ * TODO
+ * - If the window does not exists and is opened, delete old instance from DB to be replaced by the new one
+ * - Prompt user to enable incognito for best experience
+ * - Square the icons?
+ */

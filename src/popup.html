@@ -22,12 +22,13 @@
     </div>
 
     <template id="windowTemplate">
-        <li id="windowItem">
+        <li id="windowItem" data-incognito="false">
             <div id="windowHeader">
                 <h2 id="windowTitle"></h2>
                 <p id="windowLength"></p>
-                <img class="menuButton" id="openWindowButton" title="Open Window" alt="Open Window" src="images/icons/open_in_new.svg">
-                <img class="menuButton" id="deleteWindowButton" title="Discard Window" alt="Discard Window" src="images/icons/delete.svg">
+                <img class="windowMenuButton" id="incognitoIcon" title="Private Window (Incognito)" alt="Private Window (Incognito)" style="display: none;" src="images/icons/private.svg">
+                <img class="windowMenuButton" id="openWindowButton" title="Open Window" alt="Open Window" src="images/icons/open_in_new.svg">
+                <img class="windowMenuButton" id="deleteWindowButton" title="Discard Window" alt="Discard Window" src="images/icons/delete.svg">
             </div>
             <ul class="windowList"></ul>
         </li>

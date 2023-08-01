@@ -184,6 +184,12 @@ p {
     grid-area: windowLength;
 }
 
+#incognitoIcon {
+    width: 1.5rem;
+    left: 6rem;
+    opacity: 70%;
+}
+
 #openWindowButton {
     grid-area: openWindowButton;
     /* filter: invert(62%) sepia(55%) saturate(5124%) hue-rotate(184deg) brightness(94%) contrast(93%); */
@@ -204,7 +210,7 @@ p {
     border-bottom: 1px solid var(--borderColor);
 }
 
-.menuButton {
+.menuButton, .windowMenuButton {
     width: 100%;
     position: absolute;
     top: 0;
@@ -214,9 +220,13 @@ p {
     filter: var(--button);
 }
 
-.menuButton:hover {
+.menuButton:hover, .windowMenuButton:hover:not(#incognitoIcon) {
     cursor: pointer;
     opacity: 100%;
+}
+
+.windowMenuButton {
+    width: 75%;
 }
 
 .linkItem {

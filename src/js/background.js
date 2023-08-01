@@ -31,7 +31,8 @@ chrome.tabs.onCreated.addListener(async (tab) => {
             title: tab.title,
             url: tab.url,
             windowId: tab.windowId,
-            favicon: faviconUrl(tab.url)
+            favicon: faviconUrl(tab.url),
+            incognito: tab.incognito
         },
     });
 });
@@ -43,7 +44,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 title: tab.title,
                 url: tab.url,
                 windowId: tab.windowId,
-                favicon: faviconUrl(tab.url)
+                favicon: faviconUrl(tab.url),
+                incognito: tab.incognito
             },
         });
     }
@@ -60,7 +62,8 @@ chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
             title: tab[tabId].title,
             url: tab[tabId].url,
             windowId: attachInfo.newWindowId,
-            favicon: faviconUrl(tab[tabId].url)
+            favicon: faviconUrl(tab[tabId].url),
+            incognito: tab.incognito
         },
     });
 });
