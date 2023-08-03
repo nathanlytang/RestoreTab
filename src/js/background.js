@@ -1,10 +1,18 @@
 const storage = chrome.storage.local;
+const syncStorage = chrome.storage.sync;
+let bgSettings = null;
 
 (async () => {
     const settings = await storage.get("settings");
     dispatchEvent(new CustomEvent("getSettings", { detail: settings }));
+    bgSettings = settings;
 })();
 
+/**
+ * Get favicon URL of a tab
+ * @param {String} u 
+ * @returns Favicon URL
+ */
 function faviconUrl(u) {
     const url = new URL(chrome.runtime.getURL("/_favicon/"));
     url.searchParams.set("pageUrl", u);
@@ -17,6 +25,7 @@ self.addEventListener("getSettings", (event) => {
     if (!settings) {
         settings = {
             theme: "orange",
+            incognito: false
         };
     }
     const theme = settings.theme ? settings.theme : "orange";
@@ -24,6 +33,8 @@ self.addEventListener("getSettings", (event) => {
 });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
+    console.log("test", await storage.get());
+    if (tab.incognito && !bgSettings.incognito) return;
     if (!tab.id || !tab.title || !tab.url) return;
 
     storage.set({
@@ -32,12 +43,13 @@ chrome.tabs.onCreated.addListener(async (tab) => {
             url: tab.url,
             windowId: tab.windowId,
             favicon: faviconUrl(tab.url),
-            incognito: tab.incognito
+            incognito: tab.incognito,
         },
     });
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    if (tab.incognito && !bgSettings.incognito) return;
     if (changeInfo.url) {
         storage.set({
             [tab.id]: {
@@ -45,7 +57,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 url: tab.url,
                 windowId: tab.windowId,
                 favicon: faviconUrl(tab.url),
-                incognito: tab.incognito
+                incognito: tab.incognito,
             },
         });
     }
@@ -57,13 +69,16 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 
 chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
     const tab = await storage.get(tabId.toString());
+
+    if (tab[tabId].incognito && !bgSettings.incognito) return;
+
     storage.set({
         [tabId]: {
             title: tab[tabId].title,
             url: tab[tabId].url,
             windowId: attachInfo.newWindowId,
             favicon: faviconUrl(tab[tabId].url),
-            incognito: tab.incognito
+            incognito: tab[tabId].incognito,
         },
     });
 });
@@ -98,23 +113,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             storage.remove(request.keys);
             sendResponse(true);
         } else if (request.message === "getSettings") {
-            storage.get("settings", (settings) => {
+            syncStorage.get("settings", (settings) => {
                 sendResponse(settings);
             });
         }
     } else if (senderName === "options") {
+        const newSettings = {
+            theme: request.settings.theme,
+            incognito: request.settings.incognito,
+        };
         if (request.message === "save") {
-            storage.set({
-                settings: {
-                    theme: request.settings.theme,
-                    incognito: request.settings.incognito,
-                },
+            syncStorage.set({
+                settings: newSettings,
             });
+            bgSettings = newSettings;
         }
     }
 
     return true;
 });
-
-
-// TODO: Change settings to store in chrome.storage.sync instead of local
