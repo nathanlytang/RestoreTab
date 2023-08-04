@@ -21,4 +21,5 @@ Recording of Incognito is disabled by default. It can be enabled by navigating t
 
 ## To Come
 - [ ] Incognito switch
-- [ ] Theme colors
+- [x] Theme colors
+- [ ] Show recently closed tabs and give the option to restore
