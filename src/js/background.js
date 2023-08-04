@@ -3,14 +3,14 @@ const syncStorage = chrome.storage.sync;
 let bgSettings = null;
 
 (async () => {
-    const settings = await storage.get("settings");
+    const settings = await syncStorage.get("settings");
     dispatchEvent(new CustomEvent("getSettings", { detail: settings }));
-    bgSettings = settings;
+    bgSettings = settings.settings;
 })();
 
 /**
  * Get favicon URL of a tab
- * @param {String} u 
+ * @param {String} u
  * @returns Favicon URL
  */
 function faviconUrl(u) {
@@ -25,7 +25,7 @@ self.addEventListener("getSettings", (event) => {
     if (!settings) {
         settings = {
             theme: "orange",
-            incognito: false
+            incognito: false,
         };
     }
     const theme = settings.theme ? settings.theme : "orange";
@@ -33,7 +33,6 @@ self.addEventListener("getSettings", (event) => {
 });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
-    console.log("test", await storage.get());
     if (tab.incognito && !bgSettings.incognito) return;
     if (!tab.id || !tab.title || !tab.url) return;
 
@@ -70,6 +69,7 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
     const tab = await storage.get(tabId.toString());
 
+    if (!tab[tabId]) return missingTab(tabId, attachInfo);
     if (tab[tabId].incognito && !bgSettings.incognito) return;
 
     storage.set({
@@ -118,17 +118,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
         }
     } else if (senderName === "options") {
-        const newSettings = {
-            theme: request.settings.theme,
-            incognito: request.settings.incognito,
-        };
         if (request.message === "save") {
             syncStorage.set({
-                settings: newSettings,
+                settings: {
+                    theme: request.settings.theme,
+                    incognito: request.settings.incognito,
+                },
             });
-            bgSettings = newSettings;
+            bgSettings = {
+                theme: request.settings.theme,
+                incognito: request.settings.incognito,
+            };
         }
     }
 
     return true;
 });
+
+async function missingTab(tabId, attachInfo) {
+    const tab = await chrome.tabs.get(tabId);
+    storage.set({
+        [tabId]: {
+            title: tab.title,
+            url: tab.url,
+            windowId: attachInfo.newWindowId,
+            favicon: tab.url,
+            incognito: tab.incognito,
+        },
+    });
+    return;
+}
