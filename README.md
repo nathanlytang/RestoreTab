@@ -4,7 +4,7 @@
 
 ---
 
-RestoreTab is a browser extension that allows you stop worrying about losing your browsing session if your browser or computer crashes.  RestoreTab mimics your browsing, keeping a record of tabs and windows currently open.  On a crash, RestoreTab can instantly open your last used windows, leaving you right where you started.
+Stop worrying about losing your browsing session if your browser or computer crashes.  RestoreTab mimics your browsing, keeping a record of tabs and windows currently open.  On a crash, RestoreTab can instantly open your last used windows, leaving you right where you started.
 
 ## Features
 * View all browser windows
