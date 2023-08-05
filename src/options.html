@@ -12,7 +12,7 @@
 
     <form id="settings">
         <label for="theme" id="theme_title">Theme:</label>
-        <select name="theme" id="theme_setting">
+        <select name="theme" id="theme_setting" class="option_button">
             <option value="black">Black</option>
             <option value="blue">Blue</option>
             <option value="green">Green</option>
@@ -21,11 +21,19 @@
             <option value="red">Red</option>
             <option value="white">White</option>
         </select>
+
         <label for="incognito" id="incognito_title">Allow Incognito:</label>
-        <select name="incognito" id="incognito_setting">
+        <select name="incognito" id="incognito_setting" class="option_button">
             <option value="yes">Yes</option>
-            <option value="no">No</option>
+            <option selected="selected" value="no">No</option>
         </select>
+
+        <label for="discard_all" id="discard_all_title">"Discard All" button closes all windows:</label>
+        <select name="discard_all" id="discard_all_setting" class="option_button">
+            <option value="yes">Yes</option>
+            <option selected="selected" value="no">No</option>
+        </select>
+
         <input id="save" type="button" value="Save">
     </form>
 

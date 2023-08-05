@@ -21,6 +21,7 @@ document.getElementById("save").addEventListener("click", () => {
     const settings = {
         theme: theme,
         incognito: formData.get("incognito") === "yes" ? true : false,
+        discardAll: formData.get("discard_all") === "yes" ? true : false,
     };
 
     chrome.runtime.sendMessage({ message: "save", settings });

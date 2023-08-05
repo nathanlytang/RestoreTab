@@ -4,13 +4,18 @@ body {
 
 #settings {
     display: grid;
-    grid-template-columns: 10rem 5rem;
-    grid-template-rows: 1fr 1fr 1fr;
-    gap: 0.5rem 0px;
+    grid-template-columns: 15rem 5rem;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 0.5rem 5rem;
     grid-template-areas:
         "theme theme_set"
-        "incog incog_set"
+        "incognito incognito_set"
+        "discard_all discard_all_set"
         "save save";
+}
+
+.option_button {
+    height: 1.1875rem;
 }
 
 #theme_title {
@@ -22,11 +27,19 @@ body {
 }
 
 #incognito_title {
-    grid-area: incog;
+    grid-area: incognito;
 }
 
 #incognito_setting {
-    grid-area: incog_set;
+    grid-area: incognito_set;
+}
+
+#discard_all_title {
+    grid-area: discard_all;
+}
+
+#discard_all_setting {
+    grid-area: discard_all_set;
 }
 
 #save {

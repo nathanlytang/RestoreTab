@@ -26,6 +26,7 @@ self.addEventListener("getSettings", (event) => {
         settings = {
             theme: "orange",
             incognito: false,
+            discardAll: false,
         };
     }
     const theme = settings.theme ? settings.theme : "orange";
@@ -123,11 +124,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 settings: {
                     theme: request.settings.theme,
                     incognito: request.settings.incognito,
+                    discardAll: request.settings.discardAll,
                 },
             });
             bgSettings = {
                 theme: request.settings.theme,
                 incognito: request.settings.incognito,
+                discardAll: request.settings.discardAll,
             };
         }
     }
