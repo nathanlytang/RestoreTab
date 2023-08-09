@@ -190,18 +190,12 @@ document.getElementById("settingsButton").addEventListener("click", () => {
 
 /**
  * Open all tabs/windows in their respective windows
- * TODO: Add incognito functionality
  */
 async function openAll() {
-    const tabs = await chrome.runtime.sendMessage({ message: "getAll" });
-// TODO: Get all windows, check if it exists.  If not, create a new window and save to object, then open tab in that window
-    for (const [_, tab] of Object.entries(tabs)) {
-        chrome.tabs.create({
-            active: false,
-            url: tab.url,
-            windowId: tab.windowId,
-        });
-    }
+    const openWindowButtons = document.querySelectorAll("#openWindowButton");
+    openWindowButtons.forEach((window) => {
+        window.dispatchEvent(new Event("click"));
+    });
 }
 
 /**
@@ -252,7 +246,7 @@ async function openWindow(event) {
         pendingTab = window.tabs[0].id;
 
         // Delete old window tabs from DB
-        deleteWindow(event);
+        deleteWindow(event, "openWindow");
 
         const tabs = {};
         const promises = [];
@@ -297,7 +291,7 @@ async function openWindow(event) {
  * Delete all tabs within a window grouping
  * @param {PointerEvent} event
  */
-function deleteWindow(event) {
+function deleteWindow(event, callee = null) {
     const windowId = event.target.windowId;
     const list = document.getElementById(windowId).querySelectorAll("li");
 
@@ -308,7 +302,9 @@ function deleteWindow(event) {
     chrome.runtime.sendMessage({ message: "deleteWindow", keys: tabIdList });
 
     // Delete chrome window
-    chrome.windows.remove(parseInt(windowId));
+    if (callee !== "openWindow") {
+        chrome.windows.remove(parseInt(windowId));
+    }
 }
 
 /**
