@@ -436,7 +436,5 @@ chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
 
 /**
  * TODO:
- * - If the window does not exist and is opened, delete old instance from DB to be replaced by the new one
  * - Prompt user to enable incognito for best experience, blackout the Allow Incognito setting until they enable it
- * - Square the icons?
  */
