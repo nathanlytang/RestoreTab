@@ -20,6 +20,6 @@ Stop worrying about losing your browsing session if your browser or computer cra
 Recording of Incognito is disabled by default. It can be enabled by navigating to the Chrome extension settings and enabling "Allow in Incognito".
 
 ## To Come
-- [ ] Incognito switch
+- [x] Incognito switch
 - [x] Theme colors
 - [ ] Show recently closed tabs and give the option to restore
