@@ -2,10 +2,40 @@ const storage = chrome.storage.local;
 const syncStorage = chrome.storage.sync;
 let bgSettings = null;
 
+const defaultSettings = {
+    theme: "orange",
+    incognito: false,
+    incognitoOnly: false,
+    discardAll: false,
+};
+
 (async () => {
     const settings = await syncStorage.get("settings");
-    dispatchEvent(new CustomEvent("getSettings", { detail: settings }));
-    bgSettings = settings.settings;
+    bgSettings = settings.settings || defaultSettings;
+    dispatchEvent(new CustomEvent("getSettings", { detail: { settings: bgSettings } }));
+
+    // Capture all existing tabs on startup (handles extension restart/reload)
+    const allTabs = await chrome.tabs.query({});
+    const entries = {};
+    for (const tab of allTabs) {
+        if (!tab.id) continue;
+        if (tab.incognito && !bgSettings.incognito) continue;
+        if (bgSettings.incognitoOnly && !tab.incognito) continue;
+
+        const url = tab.url || tab.pendingUrl || "";
+        if (!url) continue;
+
+        entries[tab.id] = {
+            title: tab.title || "Untitled",
+            url: url,
+            windowId: tab.windowId,
+            favicon: faviconUrl(url),
+            incognito: tab.incognito,
+        };
+    }
+    if (Object.keys(entries).length > 0) {
+        storage.set(entries);
+    }
 })();
 
 /**
@@ -26,6 +56,7 @@ self.addEventListener("getSettings", (event) => {
         settings = {
             theme: "orange",
             incognito: false,
+            incognitoOnly: false,
             discardAll: false,
         };
     }
@@ -34,26 +65,34 @@ self.addEventListener("getSettings", (event) => {
 });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
+    if (!bgSettings) return;
     if (tab.incognito && !bgSettings.incognito) return;
-    if (!tab.id || !tab.title || !tab.url) return;
+    if (bgSettings.incognitoOnly && !tab.incognito) return;
+    if (!tab.id) return;
+
+    const url = tab.url || tab.pendingUrl || "";
+    if (!url) return;
 
     storage.set({
         [tab.id]: {
-            title: tab.title,
-            url: tab.url,
+            title: tab.title || "New Tab",
+            url: url,
             windowId: tab.windowId,
-            favicon: faviconUrl(tab.url),
+            favicon: faviconUrl(url),
             incognito: tab.incognito,
         },
     });
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    if (!bgSettings) return;
     if (tab.incognito && !bgSettings.incognito) return;
-    if (changeInfo.url) {
+    if (bgSettings.incognitoOnly && !tab.incognito) return;
+    if (changeInfo.url || changeInfo.title || changeInfo.status === "complete") {
+        if (!tab.url) return;
         storage.set({
             [tab.id]: {
-                title: tab.title,
+                title: tab.title || "Untitled",
                 url: tab.url,
                 windowId: tab.windowId,
                 favicon: faviconUrl(tab.url),
@@ -68,10 +107,12 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 });
 
 chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
+    if (!bgSettings) return;
     const tab = await storage.get(tabId.toString());
 
     if (!tab[tabId]) return missingTab(tabId, attachInfo);
     if (tab[tabId].incognito && !bgSettings.incognito) return;
+    if (bgSettings.incognitoOnly && !tab[tabId].incognito) return;
 
     storage.set({
         [tabId]: {
@@ -120,18 +161,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     } else if (senderName === "options") {
         if (request.message === "save") {
+            const oldIncognitoOnly = bgSettings ? bgSettings.incognitoOnly : false;
             syncStorage.set({
                 settings: {
                     theme: request.settings.theme,
                     incognito: request.settings.incognito,
+                    incognitoOnly: request.settings.incognitoOnly,
                     discardAll: request.settings.discardAll,
                 },
             });
             bgSettings = {
                 theme: request.settings.theme,
                 incognito: request.settings.incognito,
+                incognitoOnly: request.settings.incognitoOnly,
                 discardAll: request.settings.discardAll,
             };
+
+            if (request.settings.incognitoOnly && !oldIncognitoOnly) {
+                // Toggled ON: remove all non-incognito tabs from storage
+                storage.get(null, (allData) => {
+                    const keysToRemove = [];
+                    for (const [key, value] of Object.entries(allData)) {
+                        if (key === "settings") continue;
+                        if (value && !value.incognito) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                    if (keysToRemove.length > 0) {
+                        storage.remove(keysToRemove);
+                    }
+                });
+            } else if (!request.settings.incognitoOnly && oldIncognitoOnly) {
+                // Toggled OFF: re-capture all current non-incognito tabs
+                chrome.tabs.query({}, (tabs) => {
+                    for (const tab of tabs) {
+                        if (tab.incognito) continue;
+                        if (!tab.id || !tab.url) continue;
+                        storage.set({
+                            [tab.id]: {
+                                title: tab.title || "Untitled",
+                                url: tab.url,
+                                windowId: tab.windowId,
+                                favicon: faviconUrl(tab.url),
+                                incognito: tab.incognito,
+                            },
+                        });
+                    }
+                });
+            }
         }
     }
 
@@ -145,7 +222,7 @@ async function missingTab(tabId, attachInfo) {
             title: tab.title,
             url: tab.url,
             windowId: attachInfo.newWindowId,
-            favicon: tab.url,
+            favicon: faviconUrl(tab.url),
             incognito: tab.incognito,
         },
     });

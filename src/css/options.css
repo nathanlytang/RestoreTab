@@ -5,11 +5,12 @@ body {
 #settings {
     display: grid;
     grid-template-columns: 15rem 5rem;
-    grid-template-rows: repeat(4, 1fr);
+    grid-template-rows: repeat(5, 1fr);
     gap: 0.5rem 5rem;
     grid-template-areas:
         "theme theme_set"
         "incognito incognito_set"
+        "incognito_only incognito_only_set"
         "discard_all discard_all_set"
         "save save";
 }
@@ -32,6 +33,14 @@ body {
 
 #incognito_setting {
     grid-area: incognito_set;
+}
+
+#incognito_only_title {
+    grid-area: incognito_only;
+}
+
+#incognito_only_setting {
+    grid-area: incognito_only_set;
 }
 
 #discard_all_title {
