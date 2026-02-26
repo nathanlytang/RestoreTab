@@ -195,9 +195,15 @@ document.getElementById("settingsButton").addEventListener("click", () => {
  */
 async function openAll() {
     const openWindowButtons = document.querySelectorAll("#openWindowButton");
-    openWindowButtons.forEach((window) => {
-        window.dispatchEvent(new Event("click"));
-    });
+    const newWindowIds = [];
+    for (const button of openWindowButtons) {
+        const newWindowId = await openWindow({ target: button }, true);
+        if (newWindowId) newWindowIds.push(newWindowId);
+    }
+    // Focus all restored windows after everything is created
+    for (const id of newWindowIds) {
+        chrome.windows.update(id, { focused: true }).catch(() => { });
+    }
 }
 
 /**
@@ -229,7 +235,7 @@ function deleteAll() {
  * - If a window group exists, bring to front
  * @param {PointerEvent} event
  */
-async function openWindow(event) {
+async function openWindow(event, deferFocus = false) {
     let windowId = parseInt(event.target.windowId);
     const windowElement = document.getElementById(windowId);
     if (!windowElement) return;
@@ -244,31 +250,20 @@ async function openWindow(event) {
         return;
     }
 
-    // Collect tab data from the DOM before any mutations
-    const tabData = Array.from(list).map((item) => ({
-        url: item.querySelector("a").href,
-        title: item.querySelector("a").textContent,
-    }));
+    // Collect all URLs from the DOM before any mutations
+    const urls = Array.from(list).map((item) => item.querySelector("a").href);
 
     // Delete old window tabs from DB and UI first
     deleteWindow(event, "openWindow");
 
-    // Create a new window
-    const window = await chrome.windows.create({ incognito: setIncognito });
-    const newWindowId = window.id;
-    const pendingTab = window.tabs[0].id;
+    // Create a new window with all tabs in a single call to avoid race conditions where the popup closes before tabs are created
+    const window = await chrome.windows.create({
+        incognito: setIncognito,
+        focused: !deferFocus,
+        url: urls,
+    });
 
-    // Create all tabs sequentially in the new window to preserve order
-    for (const tab of tabData) {
-        await chrome.tabs.create({
-            active: false,
-            url: tab.url,
-            windowId: newWindowId,
-        });
-    }
-
-    // Remove the default new tab that was created with the window
-    if (pendingTab) chrome.tabs.remove(pendingTab);
+    return window.id;
 }
 
 /**
@@ -293,7 +288,7 @@ function deleteWindow(event, callee = null) {
 
     // Delete chrome window (ignore errors if already closed)
     if (callee !== "openWindow") {
-        chrome.windows.remove(parseInt(windowId)).catch(() => {});
+        chrome.windows.remove(parseInt(windowId)).catch(() => { });
     }
 }
 
